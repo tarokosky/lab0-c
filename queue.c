@@ -17,11 +17,42 @@
  */
 struct list_head *q_new()
 {
-    return NULL;
+    struct list_head *head =
+        (struct list_head *) malloc(sizeof(struct list_head));
+    // struct element_t *node = (struct element_t *)malloc (sizeof(element_t));
+    if (head == NULL)
+        return NULL;
+    else {
+        head->prev = head;
+        head->next = head;
+        printf(".head => %p\n", head);
+        return head;
+    }
 }
 
 /* Free all storage used by queue */
-void q_free(struct list_head *l) {}
+void q_free(struct list_head *l)
+{
+    // struct list_head *ptr = l;
+    element_t *tmp;
+    // printf("l => %p\n", l);
+    // printf("l->next => %p\n", l->next);
+    // printf("ptr => %p\n", ptr);
+
+    if (l != NULL) {
+        l->prev->next = NULL;
+    }
+    while (l != NULL) {
+        tmp = (element_t *) l;
+        l = l->next;
+        printf("free tmp => %p\n", &tmp);
+        printf("free tmp->prev => %p\n", tmp->list.prev);
+        printf("free tmp->next => %p\n", tmp->list.next);
+        printf("free tmp->value => %s\n", tmp->value);
+        free(tmp->value);
+        free(&tmp->list);
+    }
+}
 
 /*
  * Attempt to insert element at head of queue.
@@ -32,7 +63,27 @@ void q_free(struct list_head *l) {}
  */
 bool q_insert_head(struct list_head *head, char *s)
 {
-    return true;
+    int str_len = strlen(s) + 1;
+    element_t *node = malloc(sizeof(element_t));
+    char *str = malloc(sizeof(char) * str_len);
+
+    // printf(" .. %p, %s\n", node, s);
+
+    if (node == NULL || head == NULL || str == NULL) {
+        if (node)
+            free(node);
+        if (str)
+            free(str);
+        return false;
+    } else {
+        strncpy(str, s, str_len);
+        node->value = str;
+        node->list.prev = head;
+        node->list.next = head->next;
+        head->next->prev = &node->list;
+        head->next = &node->list;
+        return true;
+    }
 }
 
 /*
@@ -44,7 +95,27 @@ bool q_insert_head(struct list_head *head, char *s)
  */
 bool q_insert_tail(struct list_head *head, char *s)
 {
-    return true;
+    int str_len = strlen(s) + 1;
+    element_t *node = malloc(sizeof(element_t));
+    char *str = malloc(sizeof(char) * str_len);
+
+    // printf(" .. %p, %s\n", node, s);
+
+    if (node == NULL || head == NULL || str == NULL) {
+        if (node)
+            free(node);
+        if (str)
+            free(str);
+        return false;
+    } else {
+        strncpy(str, s, str_len);
+        node->value = str;
+        node->list.prev = head->prev;
+        node->list.next = head;
+        head->prev->next = &node->list;
+        head->prev = &node->list;
+        return true;
+    }
 }
 
 /*
@@ -91,7 +162,15 @@ void q_release_element(element_t *e)
  */
 int q_size(struct list_head *head)
 {
-    return -1;
+    if (!head)
+        return 0;
+
+    int len = 0;
+    struct list_head *li;
+
+    list_for_each (li, head)
+        len++;
+    return len;
 }
 
 /*
