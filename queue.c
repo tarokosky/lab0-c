@@ -33,24 +33,16 @@ struct list_head *q_new()
 /* Free all storage used by queue */
 void q_free(struct list_head *l)
 {
-    // struct list_head *ptr = l;
-    element_t *tmp;
-    // printf("l => %p\n", l);
-    // printf("l->next => %p\n", l->next);
-    // printf("ptr => %p\n", ptr);
-
+    struct list_head *cur;
     if (l != NULL) {
-        l->prev->next = NULL;
-    }
-    while (l != NULL) {
-        tmp = (element_t *) l;
-        l = l->next;
-        printf("free tmp => %p\n", &tmp);
-        printf("free tmp->prev => %p\n", tmp->list.prev);
-        printf("free tmp->next => %p\n", tmp->list.next);
-        printf("free tmp->value => %s\n", tmp->value);
-        free(tmp->value);
-        free(&tmp->list);
+        cur = l->next;
+        while (cur != l) {
+            element_t *e = list_entry(cur, element_t, list);
+            cur = cur->next;
+            free(e->value);
+            free(e);
+        }
+        free(l);
     }
 }
 
@@ -217,7 +209,63 @@ void q_swap(struct list_head *head)
  * (e.g., by calling q_insert_head, q_insert_tail, or q_remove_head).
  * It should rearrange the existing ones.
  */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head)
+{
+    /*
+    struct list_head *cur = head;
+    struct list_head *prev, *next;
+    int count = 1;
+    printf("head: %p, %p, %p\n\n", cur->prev, cur, cur->next);
+    cur = head->next;
+    while (cur != head) {
+        element_t *e = list_entry(cur, element_t, list);
+        printf("%d => c: %p, %p, %p, %s\n", count, cur->prev, cur, cur->next,
+               e->value);
+        count++;
+        cur = cur->next;
+    }
+
+    printf("\n\n");
+
+
+    count = 1;
+    cur = head->prev;
+    while (cur != NULL && cur != head) {
+        if (count > 10) {
+            break;
+        }
+        if (cur != head) {
+            element_t *e = list_entry(cur, element_t, list);
+            printf("%d => %s\n", count, e->value);
+        }
+        prev = cur->prev;
+        next = cur->next;
+        printf("%d => head: %p, cursor => %p, prev => %p, next => %p\n", count,
+    head, cur, prev, next); printf("%d => 1. c: %p, %p, %p\n", count, cur->prev,
+    cur, cur->next); printf("%d => 1. p: %p, %p, %p\n", count, prev->prev, prev,
+    prev->next); printf("%d => 1. n: %p, %p, %p\n", count, next->prev, next,
+    next->next); cur->prev = next; cur->next = prev; printf("%d => 2. c: %p, %p,
+    %p\n", count, cur->prev, cur, cur->next); printf("%d => 2. p: %p, %p, %p\n",
+    count, prev->prev, prev, prev->next); printf("%d => 2. n: %p, %p, %p\n",
+    count, next->prev, next, next->next); cur = prev; printf("%d => 3. c: %p,
+    %p, %p\n", count, cur->prev, cur, cur->next); printf("%d => 3. p: %p, %p,
+    %p\n", count, prev->prev, prev, prev->next); printf("%d => 3. n: %p, %p,
+    %p\n", count, next->prev, next, next->next); count++;
+    }
+
+    printf("------------------------------------------\n");
+
+    cur = head->next;
+    while (cur != head) {
+        element_t *e = list_entry(cur, element_t, list);
+        printf("%d => c: %p, %p, %p, %s\n", count, cur->prev, cur, cur->next,
+               e->value);
+        count++;
+        cur = cur->next;
+    }
+
+    */
+}
 
 /*
  * Sort elements of queue in ascending order

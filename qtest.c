@@ -830,7 +830,7 @@ static void queue_init()
 
 static bool queue_quit(int argc, char *argv[])
 {
-    report(3, "Freeing queue");
+    report(3, "queue");
     if (lcnt > big_list_size)
         set_cautious_mode(false);
 
