@@ -185,7 +185,30 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
-    return true;
+    if (head == NULL || head->prev == head->next)
+        return false;
+    else {
+        struct list_head *front = head->next;
+        struct list_head *rear = head->prev;
+        while (front != rear && rear != front->next) {
+            front = front->next;
+            rear = rear->prev;
+        }
+        if (front == rear) {
+            rear->prev->next = rear->next;
+            front->next->prev = front->prev;
+            element_t *e = list_entry(rear, element_t, list);
+            free(e->value);
+            free(e);
+        } else if (rear == front->next) {
+            rear->next->prev = front;
+            front->next = rear->next;
+            element_t *e = list_entry(rear, element_t, list);
+            free(e->value);
+            free(e);
+        }
+        return true;
+    }
 }
 
 /*
@@ -232,6 +255,7 @@ void q_reverse(struct list_head *head)
         }
         cur = next;
     }
+    return;
 }
 
 /*
