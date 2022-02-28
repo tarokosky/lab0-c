@@ -227,60 +227,18 @@ void q_swap(struct list_head *head)
  */
 void q_reverse(struct list_head *head)
 {
-    /*
     struct list_head *cur = head;
-    struct list_head *prev, *next;
-    int count = 1;
-    printf("head: %p, %p, %p\n\n", cur->prev, cur, cur->next);
-    cur = head->next;
-    while (cur != head) {
-        element_t *e = list_entry(cur, element_t, list);
-        printf("%d => c: %p, %p, %p, %s\n", count, cur->prev, cur, cur->next,
-               e->value);
-        count++;
-        cur = cur->next;
-    }
-
-    printf("\n\n");
-
-
-    count = 1;
-    cur = head->prev;
-    while (cur != NULL && cur != head) {
-        if (count > 10) {
+    struct list_head *next;
+    while (cur != NULL && cur->prev != cur->next) {
+        next = cur->next;
+        cur->next = cur->prev;
+        cur->prev = next;
+        if (next == head) {
+            next->next = cur;
             break;
         }
-        if (cur != head) {
-            element_t *e = list_entry(cur, element_t, list);
-            printf("%d => %s\n", count, e->value);
-        }
-        prev = cur->prev;
-        next = cur->next;
-        printf("%d => head: %p, cursor => %p, prev => %p, next => %p\n", count,
-    head, cur, prev, next); printf("%d => 1. c: %p, %p, %p\n", count, cur->prev,
-    cur, cur->next); printf("%d => 1. p: %p, %p, %p\n", count, prev->prev, prev,
-    prev->next); printf("%d => 1. n: %p, %p, %p\n", count, next->prev, next,
-    next->next); cur->prev = next; cur->next = prev; printf("%d => 2. c: %p, %p,
-    %p\n", count, cur->prev, cur, cur->next); printf("%d => 2. p: %p, %p, %p\n",
-    count, prev->prev, prev, prev->next); printf("%d => 2. n: %p, %p, %p\n",
-    count, next->prev, next, next->next); cur = prev; printf("%d => 3. c: %p,
-    %p, %p\n", count, cur->prev, cur, cur->next); printf("%d => 3. p: %p, %p,
-    %p\n", count, prev->prev, prev, prev->next); printf("%d => 3. n: %p, %p,
-    %p\n", count, next->prev, next, next->next); count++;
+        cur = next;
     }
-
-    printf("------------------------------------------\n");
-
-    cur = head->next;
-    while (cur != head) {
-        element_t *e = list_entry(cur, element_t, list);
-        printf("%d => c: %p, %p, %p, %s\n", count, cur->prev, cur, cur->next,
-               e->value);
-        count++;
-        cur = cur->next;
-    }
-
-    */
 }
 
 /*
