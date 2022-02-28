@@ -19,7 +19,6 @@ struct list_head *q_new()
 {
     struct list_head *head =
         (struct list_head *) malloc(sizeof(struct list_head));
-    // struct element_t *node = (struct element_t *)malloc (sizeof(element_t));
     if (head == NULL)
         return NULL;
     else {
@@ -58,9 +57,6 @@ bool q_insert_head(struct list_head *head, char *s)
     int str_len = strlen(s) + 1;
     element_t *node = malloc(sizeof(element_t));
     char *str = malloc(sizeof(char) * str_len);
-
-    // printf(" .. %p, %s\n", node, s);
-
     if (node == NULL || head == NULL || str == NULL) {
         if (node)
             free(node);
@@ -90,9 +86,6 @@ bool q_insert_tail(struct list_head *head, char *s)
     int str_len = strlen(s) + 1;
     element_t *node = malloc(sizeof(element_t));
     char *str = malloc(sizeof(char) * str_len);
-
-    // printf(" .. %p, %s\n", node, s);
-
     if (node == NULL || head == NULL || str == NULL) {
         if (node)
             free(node);
