@@ -280,9 +280,66 @@ void q_reverse(struct list_head *head)
     return;
 }
 
+void _swap_node(struct list_head *L, struct list_head *R)
+{
+    struct list_head *LL = L->prev;
+    struct list_head *LR = L->next;
+    struct list_head *RL = R->prev;
+    struct list_head *RR = R->next;
+
+    if (L->next == R) {
+        LL->next = R;
+        R->prev = LL;
+        R->next = L;
+        RR->prev = L;
+        L->prev = R;
+        L->next = RR;
+    } else {
+        LL->next = R;
+        LR->prev = R;
+        R->prev = LL;
+        R->next = LR;
+
+        RL->next = L;
+        RR->prev = L;
+        L->prev = RL;
+        L->next = RR;
+    }
+}
+
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head)
+{
+    if (head == NULL || head->prev == head->next || head->next->next == head)
+        return;
+    else {
+        struct list_head *LL = head;
+        struct list_head *L = LL->next;
+        struct list_head *R = L->next;
+        struct list_head *RR;
+
+        while (R != head) {
+            while (R != head && L != R) {
+                RR = R->next;
+                element_t *e1 = list_entry(L, element_t, list);
+                element_t *e2 = list_entry(R, element_t, list);
+                if (strcmp(e1->value, e2->value) > 0) {
+                    _swap_node(L, R);
+                    L = LL->next;
+                    R = RR->prev;
+                }
+                // Move R to next node
+                R = R->next;
+            }
+            // Move LL, L
+            LL = L;
+            L = L->next;
+            R = L->next;
+        }
+    }
+    return;
+}
