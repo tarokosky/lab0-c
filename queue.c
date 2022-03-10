@@ -324,33 +324,6 @@ void q_reverse(struct list_head *head)
     return;
 }
 
-void _swap_node(struct list_head *L, struct list_head *R)
-{
-    struct list_head *LL = L->prev;
-    struct list_head *LR = L->next;
-    struct list_head *RL = R->prev;
-    struct list_head *RR = R->next;
-
-    if (L->next == R) {
-        LL->next = R;
-        R->prev = LL;
-        R->next = L;
-        RR->prev = L;
-        L->prev = R;
-        L->next = RR;
-    } else {
-        LL->next = R;
-        LR->prev = R;
-        R->prev = LL;
-        R->next = LR;
-
-        RL->next = L;
-        RR->prev = L;
-        L->prev = RL;
-        L->next = RR;
-    }
-}
-
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
@@ -361,29 +334,99 @@ void q_sort(struct list_head *head)
     if (head == NULL || head->prev == head->next || head->next->next == head)
         return;
     else {
-        struct list_head *LL = head;
-        struct list_head *L = LL->next;
-        struct list_head *R = L->next;
-        struct list_head *RR;
+        int q_len = q_size(head);
+        if (q_len <= 1)
+            return;
 
-        while (R != head) {
-            while (R != head && L != R) {
-                RR = R->next;
-                element_t *e1 = list_entry(L, element_t, list);
-                element_t *e2 = list_entry(R, element_t, list);
-                if (strcmp(e1->value, e2->value) > 0) {
-                    _swap_node(L, R);
-                    L = LL->next;
-                    R = RR->prev;
+        int step;
+        struct list_head *start_cur;
+        struct list_head *sorted_cur;
+        for (step = 1; step < q_len; step = step << 1) {
+            start_cur = head->next;
+            sorted_cur = head;
+            while (start_cur != head) {
+                // Prepare section cursor
+                struct list_head *cur0 = start_cur;
+                struct list_head *cur1 = start_cur;
+                struct list_head *cur2 = start_cur;
+                for (int count = 1; count <= step && cur0 != head; count++) {
+                    if (count == step) {
+                        cur2 = cur0->next;
+                        cur0->next = NULL;
+                        cur0 = cur2;
+                    } else if (cur0->next == head) {
+                        cur0->next = NULL;
+                        cur2 = head;
+                        cur0 = head;
+                    } else
+                        cur0 = cur0->next;
                 }
-                // Move R to next node
-                R = R->next;
+
+                for (int count = 1; count <= step && cur0 != head; count++) {
+                    if (count == step) {
+                        start_cur = cur0->next;
+                        cur0->next = NULL;
+                    } else if (cur0->next == head) {
+                        cur0->next = NULL;
+                        start_cur = head;
+                        cur0 = head;
+                    } else
+                        cur0 = cur0->next;
+                }
+                if (cur2 == head)
+                    start_cur = head;
+
+                struct list_head *tmp1;
+                struct list_head *tmp2;
+                while (cur1 != NULL && cur2 != NULL && cur2 != head) {
+                    element_t *e1 = list_entry(cur1, element_t, list);
+                    element_t *e2 = list_entry(cur2, element_t, list);
+                    int cmp_ret = strcmp(e1->value, e2->value);
+                    if (cmp_ret > 0) {
+                        tmp2 = cur2->next;
+
+                        sorted_cur->next = cur2;
+                        sorted_cur = cur2;
+                        cur2 = tmp2;
+                    } else if (cmp_ret == 0) {
+                        tmp1 = cur1->next;
+                        tmp2 = cur2->next;
+
+                        cur1->next = cur2;
+                        sorted_cur->next = cur1;
+                        sorted_cur = cur2;
+                        cur1 = tmp1;
+                        cur2 = tmp2;
+                    } else {
+                        tmp1 = cur1->next;
+
+                        sorted_cur->next = cur1;
+                        sorted_cur = cur1;
+                        cur1 = tmp1;
+                    }
+                }
+                if (cur1 != NULL && cur2 == NULL) {
+                    sorted_cur->next = cur1;
+                }
+                if (cur1 == NULL && cur2 != NULL) {
+                    sorted_cur->next = cur2;
+                }
+                if (cur1 != NULL && cur2 == head) {
+                    sorted_cur->next = cur1;
+                }
+                while (sorted_cur->next != NULL)
+                    sorted_cur = sorted_cur->next;
+                sorted_cur->next = head;
             }
-            // Move LL, L
-            LL = L;
-            L = L->next;
-            R = L->next;
         }
+        sorted_cur = head->next;
+        struct list_head *prev = head;
+        while (sorted_cur != head) {
+            sorted_cur->prev = prev;
+            prev = sorted_cur;
+            sorted_cur = sorted_cur->next;
+        }
+        head->prev = prev;
     }
     return;
 }
