@@ -245,9 +245,9 @@ bool q_delete_dup(struct list_head *head)
         return false;
     else {
         struct list_head *cur = head->next;
-        char *target_str;
+        char *target_str = NULL;
         int str_len;
-        while (cur != head) {
+        while (cur != head && cur->next != head) {
             element_t *e1 = list_entry(cur, element_t, list);
             element_t *e2 = list_entry(cur->next, element_t, list);
             if (strcmp(e1->value, e2->value) == 0) {
@@ -259,7 +259,8 @@ bool q_delete_dup(struct list_head *head)
                     _delete_node(cur->prev);
                     if (cur == head)
                         break;
-                    e1 = list_entry(cur, element_t, list);
+                    else
+                        e1 = list_entry(cur, element_t, list);
                 }
                 free(target_str);
             } else {
