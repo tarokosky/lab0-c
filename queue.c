@@ -5,6 +5,10 @@
 #include "harness.h"
 #include "queue.h"
 
+#include <stdint.h>
+#include <sys/time.h>
+#include <unistd.h>
+
 /* Notice: sometimes, Cppcheck would find the potential NULL pointer bugs,
  * but some of them cannot occur. You can suppress them by adding the
  * following line.
@@ -325,6 +329,247 @@ void q_reverse(struct list_head *head)
     return;
 }
 
+struct list_head *mergeTwoLists(struct list_head *L1, struct list_head *L2)
+{
+    struct list_head *head = NULL, **ptr = &head, **node;
+    for (node = NULL; L1 && L2; *node = (*node)->next) {
+        element_t *e1 = list_entry(L1, element_t, list);
+        element_t *e2 = list_entry(L2, element_t, list);
+        node = (strcasecmp(e1->value, e2->value) < 0) ? &L1 : &L2;
+        *ptr = *node;
+        ptr = &(*ptr)->next;
+    }
+    *ptr = (struct list_head *) ((uintptr_t) L1 | (uintptr_t) L2);
+    return head;
+}
+
+/*
+void merge_sort_stack(struct list_head *head)
+{
+    printf("--  merge_sort_stack  --\n");
+    //_show_queue(head);
+    struct timeval start_t, end_t;
+    unsigned long diff;
+    gettimeofday(&start_t, NULL);
+    int q_len = q_size(head);
+    // struct list_head *result = NULL;
+    struct list_head *stack[1000] = {NULL};
+    struct list_head *lists[1000000];
+    int top = 0;
+    int listsSize = 0;
+    stack[top] = head->next;
+    head->prev->next = NULL;
+
+    while (top >= 0) {
+        // printf(" --top: %d, listsSize: %d --\n", top, listsSize);
+        struct list_head *left = stack[top--];
+
+        if (left) {
+            struct list_head *slow = left;
+            struct list_head *fast = left->next;
+
+            while (fast && fast->next) {
+                fast = fast->next->next;
+                slow = slow->next;
+            }
+            struct list_head *right = slow->next;
+            slow->next = NULL;
+            // printf("slow: %p, fast: %p\n", slow, fast);
+
+            stack[++top] = left;
+            stack[++top] = right;
+        } else {
+            lists[listsSize++] = stack[top--];
+            // result = mergeTwoLists(result, stack[top--]);
+        }
+    }
+    // merge K sorted lists
+    while (listsSize > 1) {
+        for (int i = 0, j = listsSize - 1; i < j; i++, j--)
+            lists[i] = mergeTwoLists(lists[i], lists[j]);
+        listsSize = (listsSize + 1) / 2;
+    }
+
+    head->next = lists[0];
+
+    struct list_head *sorted_cur = head->next;
+    struct list_head *prev = head;
+    while (sorted_cur != NULL) {
+        sorted_cur->prev = prev;
+        prev = sorted_cur;
+        sorted_cur = sorted_cur->next;
+    }
+    prev->next = head;
+    head->prev = prev;
+    gettimeofday(&end_t, NULL);
+    diff = 1000000 * (end_t.tv_sec - start_t.tv_sec) + end_t.tv_usec -
+           start_t.tv_usec;
+    printf("Execution time = %lu ms for %d nodes\n\n\n", diff, q_len);
+
+    return;
+}
+
+void merge_sort_linkedlist(struct list_head *head)
+{
+    printf("--  merge_sort_linkedlist  --\n");
+    struct timeval start_t, end_t;
+    unsigned long diff;
+    gettimeofday(&start_t, NULL);
+    int q_len = q_size(head);
+    struct list_head *start_cur;
+    struct list_head *sorted_cur;
+    struct list_head *cur0, *cur1, *cur2;
+    // struct list_head *end1, *end2;
+    struct list_head *tmp1, *tmp2;
+    for (int step = 1; step < q_len; step = step << 1) {
+        start_cur = head->next;
+        sorted_cur = head;
+        while (start_cur != head) {
+            // Prepare section cursor
+            cur0 = start_cur;
+            cur1 = start_cur;
+            cur2 = start_cur;
+            // end1 = end2 = NULL;
+            for (int count = 1; count <= step && cur0 != head; count++) {
+                if (count == step) {
+                    // end1 = cur0;
+                    cur2 = cur0->next;
+                    cur0->next = NULL;
+                    cur0 = cur2;
+                    if (cur2 == head)
+                        start_cur = head;
+                } else if (cur0->next == head) {
+                    // end1 = cur0;
+                    cur0->next = NULL;
+                    cur2 = head;
+                    cur0 = head;
+                    start_cur = head;
+                } else
+                    cur0 = cur0->next;
+            }
+
+            for (int count = 1; count <= step && cur0 != head; count++) {
+                if (count == step) {
+                    // end2 = cur0;
+                    start_cur = cur0->next;
+                    cur0->next = NULL;
+                } else if (cur0->next == head) {
+                    // end2 = cur0;
+                    cur0->next = NULL;
+                    start_cur = head;
+                    cur0 = head;
+                } else
+                    cur0 = cur0->next;
+            }
+
+            while (cur1 != NULL && cur2 != NULL && cur2 != head) {
+                element_t *e1 = list_entry(cur1, element_t, list);
+                element_t *e2 = list_entry(cur2, element_t, list);
+                int cmp_ret = strcasecmp(e1->value, e2->value);
+                if (cmp_ret > 0) {
+                    tmp2 = cur2->next;
+
+                    sorted_cur->next = cur2;
+                    sorted_cur = cur2;
+                    cur2 = tmp2;
+                } else if (cmp_ret == 0) {
+                    tmp1 = cur1->next;
+                    tmp2 = cur2->next;
+
+                    cur1->next = cur2;
+                    sorted_cur->next = cur1;
+                    sorted_cur = cur2;
+                    cur1 = tmp1;
+                    cur2 = tmp2;
+                } else {
+                    tmp1 = cur1->next;
+
+                    sorted_cur->next = cur1;
+                    sorted_cur = cur1;
+                    cur1 = tmp1;
+                }
+            }
+            if (cur1 != NULL && cur2 == NULL) {
+                sorted_cur->next = cur1;
+                // if (end1 != NULL)
+                //    sorted_cur = end1;
+            }
+            if (cur1 == NULL && cur2 != NULL) {
+                sorted_cur->next = cur2;
+                // if (end2 != NULL)
+                //    sorted_cur = end2;
+            }
+            if (cur1 != NULL && cur2 == head) {
+                sorted_cur->next = cur1;
+                // if (end1 != NULL)
+                //    sorted_cur = end1;
+            }
+            while (sorted_cur->next != NULL)
+                sorted_cur = sorted_cur->next;
+            sorted_cur->next = head;
+        }
+    }
+    sorted_cur = head->next;
+    struct list_head *prev = head;
+    while (sorted_cur != head) {
+        sorted_cur->prev = prev;
+        prev = sorted_cur;
+        sorted_cur = sorted_cur->next;
+    }
+    head->prev = prev;
+    gettimeofday(&end_t, NULL);
+    diff = 1000000 * (end_t.tv_sec - start_t.tv_sec) + end_t.tv_usec -
+           start_t.tv_usec;
+    printf("Execution time = %lu ms for %d nodes\n\n\n", diff, q_len);
+
+    return;
+}
+
+*/
+static struct list_head *mergesort_recursive(struct list_head *head)
+{
+    if (head == NULL || head->next == NULL)
+        return head;
+    struct list_head *slow = head;
+    struct list_head *fast = head->next;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    struct list_head *mid = slow->next;
+    slow->next = NULL;
+
+    struct list_head *left = mergesort_recursive(head);
+    struct list_head *right = mergesort_recursive(mid);
+    return mergeTwoLists(left, right);
+}
+
+void merge_sort_recursive(struct list_head *head)
+{
+    struct timeval start_t, end_t;
+    unsigned long diff;
+    gettimeofday(&start_t, NULL);
+    int q_len = q_size(head);
+    head->prev->next = NULL;
+    head->next = mergesort_recursive(head->next);
+    struct list_head *sorted_cur = head->next;
+    struct list_head *prev = head;
+    while (sorted_cur != NULL) {
+        sorted_cur->prev = prev;
+        prev = sorted_cur;
+        sorted_cur = sorted_cur->next;
+    }
+    prev->next = head;
+    head->prev = prev;
+
+    gettimeofday(&end_t, NULL);
+    diff = 1000000 * (end_t.tv_sec - start_t.tv_sec) + end_t.tv_usec -
+           start_t.tv_usec;
+    printf("Execution time = %lu ms for %d nodes\n", diff, q_len);
+
+    return;
+}
+
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
@@ -335,99 +580,9 @@ void q_sort(struct list_head *head)
     if (head == NULL || head->prev == head->next || head->next->next == head)
         return;
     else {
-        int q_len = q_size(head);
-        if (q_len <= 1)
-            return;
-
-        int step;
-        struct list_head *start_cur;
-        struct list_head *sorted_cur;
-        for (step = 1; step < q_len; step = step << 1) {
-            start_cur = head->next;
-            sorted_cur = head;
-            while (start_cur != head) {
-                // Prepare section cursor
-                struct list_head *cur0 = start_cur;
-                struct list_head *cur1 = start_cur;
-                struct list_head *cur2 = start_cur;
-                for (int count = 1; count <= step && cur0 != head; count++) {
-                    if (count == step) {
-                        cur2 = cur0->next;
-                        cur0->next = NULL;
-                        cur0 = cur2;
-                    } else if (cur0->next == head) {
-                        cur0->next = NULL;
-                        cur2 = head;
-                        cur0 = head;
-                    } else
-                        cur0 = cur0->next;
-                }
-
-                for (int count = 1; count <= step && cur0 != head; count++) {
-                    if (count == step) {
-                        start_cur = cur0->next;
-                        cur0->next = NULL;
-                    } else if (cur0->next == head) {
-                        cur0->next = NULL;
-                        start_cur = head;
-                        cur0 = head;
-                    } else
-                        cur0 = cur0->next;
-                }
-                if (cur2 == head)
-                    start_cur = head;
-
-                struct list_head *tmp1;
-                struct list_head *tmp2;
-                while (cur1 != NULL && cur2 != NULL && cur2 != head) {
-                    element_t *e1 = list_entry(cur1, element_t, list);
-                    element_t *e2 = list_entry(cur2, element_t, list);
-                    int cmp_ret = strcmp(e1->value, e2->value);
-                    if (cmp_ret > 0) {
-                        tmp2 = cur2->next;
-
-                        sorted_cur->next = cur2;
-                        sorted_cur = cur2;
-                        cur2 = tmp2;
-                    } else if (cmp_ret == 0) {
-                        tmp1 = cur1->next;
-                        tmp2 = cur2->next;
-
-                        cur1->next = cur2;
-                        sorted_cur->next = cur1;
-                        sorted_cur = cur2;
-                        cur1 = tmp1;
-                        cur2 = tmp2;
-                    } else {
-                        tmp1 = cur1->next;
-
-                        sorted_cur->next = cur1;
-                        sorted_cur = cur1;
-                        cur1 = tmp1;
-                    }
-                }
-                if (cur1 != NULL && cur2 == NULL) {
-                    sorted_cur->next = cur1;
-                }
-                if (cur1 == NULL && cur2 != NULL) {
-                    sorted_cur->next = cur2;
-                }
-                if (cur1 != NULL && cur2 == head) {
-                    sorted_cur->next = cur1;
-                }
-                while (sorted_cur->next != NULL)
-                    sorted_cur = sorted_cur->next;
-                sorted_cur->next = head;
-            }
-        }
-        sorted_cur = head->next;
-        struct list_head *prev = head;
-        while (sorted_cur != head) {
-            sorted_cur->prev = prev;
-            prev = sorted_cur;
-            sorted_cur = sorted_cur->next;
-        }
-        head->prev = prev;
+        // merge_sort_stack(head);
+        // merge_sort_linkedlist(head);
+        merge_sort_recursive(head);
     }
     return;
 }
