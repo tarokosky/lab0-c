@@ -546,10 +546,10 @@ static struct list_head *mergesort_recursive(struct list_head *head)
 
 void merge_sort_recursive(struct list_head *head)
 {
-    struct timeval start_t, end_t;
-    unsigned long diff;
-    gettimeofday(&start_t, NULL);
-    int q_len = q_size(head);
+    // struct timeval start_t, end_t;
+    // unsigned long diff;
+    // gettimeofday(&start_t, NULL);
+    // int q_len = q_size(head);
     head->prev->next = NULL;
     head->next = mergesort_recursive(head->next);
     struct list_head *sorted_cur = head->next;
@@ -562,10 +562,10 @@ void merge_sort_recursive(struct list_head *head)
     prev->next = head;
     head->prev = prev;
 
-    gettimeofday(&end_t, NULL);
-    diff = 1000000 * (end_t.tv_sec - start_t.tv_sec) + end_t.tv_usec -
-           start_t.tv_usec;
-    printf("Execution time = %lu ms for %d nodes\n", diff, q_len);
+    // gettimeofday(&end_t, NULL);
+    // diff = 1000000 * (end_t.tv_sec - start_t.tv_sec) + end_t.tv_usec -
+    //       start_t.tv_usec;
+    // printf("Execution time = %lu ms for %d nodes\n", diff, q_len);
 
     return;
 }
