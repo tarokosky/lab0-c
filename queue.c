@@ -28,7 +28,6 @@ struct list_head *q_new()
     else {
         head->prev = head;
         head->next = head;
-        printf(".head => %p\n", head);
         return head;
     }
 }
